@@ -18,6 +18,7 @@ bool CheckFeatures(Obj2d* obj, type_condition condition, int features_to_check)
 	if(features_to_check & FEATURE_CHECK_SIZE_RATIO)
 		if(!(condition.size_ratio[0] <= size_ratio) || !(size_ratio <= condition.size_ratio[1]))
 			res = false;
+	// need to add new checks
 	return res;
 }
 void GetObj2d(Obj2d* obj)
@@ -50,12 +51,14 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 		for(unsigned j = 0; j < conditions.size(); j++)
 			if(CheckFeatures(&temp_obj, conditions[j], features_to_check[j]))
 			{
+				temp_obj.tag = j;
 				res.push_back(temp_obj);
 				BanishContour(banished, hierarchy, i);
 				break;
 			}
 		if(!conditions.size())
 		{
+			temp_obj.tag = -1;
 			res.push_back(temp_obj);
 			BanishContour(banished, hierarchy, i);
 		}

@@ -69,5 +69,5 @@ Mat Binarize(Mat img)
 Scalar RandomColor(RNG& rng)
 {
 	int color = (unsigned)rng;
-	return Scalar(icolor & 0xFF, (icolor >> 8) & 0xFF, (icolor >> 16) & 0xFF);
+	return Scalar(color & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
 }

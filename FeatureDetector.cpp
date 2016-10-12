@@ -49,7 +49,7 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 		temp_obj.contours = GetContours(GetContours(hierarchy, i), contours);
 		GetObj2d(&temp_obj);
 		for(unsigned j = 0; j < conditions.size(); j++)
-			if(CheckFeatures(&temp_obj, conditions[j], features_to_check[j]))
+			if(CheckFeatures(&temp_obj, conditions[j], features_to_check[j % features_to_check.size()]))
 			{
 				temp_obj.tag = j;
 				res.push_back(temp_obj);

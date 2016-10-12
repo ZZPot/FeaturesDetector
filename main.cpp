@@ -42,7 +42,7 @@ int main()
 	cond[1].rect[0].height = 20;
 	cond[1].rect[1].height = 300;
 
-	std::vector<int> check = {FEATURE_CHECK_SIZE | FEATURE_CHECK_SIZE_RATIO, FEATURE_CHECK_SIZE | FEATURE_CHECK_SIZE_RATIO};
+	std::vector<int> check = {FEATURE_CHECK_SIZE | FEATURE_CHECK_SIZE_RATIO};
 	Mat img_obj = Mat::zeros(img_bin.size(), CV_8UC3);
 	std::vector<Obj2d> objects = FindObjects(img_bin, cond, check, RETR_EXTERNAL, 0);
 	std::vector<Scalar> colors = {Scalar::all(255), Scalar::all(0)};

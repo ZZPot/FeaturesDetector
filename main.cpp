@@ -1,31 +1,15 @@
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/highgui.hpp"
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include "FeatureDetector.h"
 
 using namespace cv;
 #define IMG_NAME	"1.jpg"
-#define WND_NAME_TEMP	""
-#define SHOW_N_WAIT(img) imshow(WND_NAME_TEMP, img); waitKey(0);
-
-Mat Binarize(Mat img);
-Scalar RandomColor(RNG& rng);
-
 
 int main()
 {
 	Mat input_img = imread(IMG_NAME, IMREAD_GRAYSCALE);
 		SHOW_N_WAIT(input_img);
-	Mat img_blur;
-	medianBlur(input_img, img_blur, 5);
-		SHOW_N_WAIT(img_blur);
-	Mat img_bin;
-	Canny(img_blur, img_bin, 50, 150);
-		SHOW_N_WAIT(img_bin);
-	img_bin = Binarize(img_bin);
-		SHOW_N_WAIT(img_bin);
-	morphologyEx(img_bin, img_bin, MORPH_CLOSE, getStructuringElement(MORPH_ELLIPSE, Size(5, 5))); // clean
-		SHOW_N_WAIT(img_bin);
+	Mat img_bin = Binarize(input_img);
 	std::vector<type_condition> cond;
 	cond.resize(2);
 	cond[0].size_ratio[0] = 1; // for picks
@@ -60,14 +44,3 @@ int main()
 	return 0;
 }
 
-Mat Binarize(Mat img)
-{
-	Mat res;
-	threshold(img, res, 0, 255, THRESH_OTSU);
-	return res;
-}
-Scalar RandomColor(RNG& rng)
-{
-	int color = (unsigned)rng;
-	return Scalar(color & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
-}

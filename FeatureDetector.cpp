@@ -1,8 +1,9 @@
 #include "FeatureDetector.h"
 #include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 
 #pragma warning(disable: 4244 4267 4018)
-
+#define BIN_DIFF
 bool CheckFeatures(Obj2d* obj, type_condition condition, int features_to_check)
 {
 	bool res = true;
@@ -146,4 +147,31 @@ void DrawRRect(cv::RotatedRect r_rect, cv::Mat& img, cv::Scalar color, int thick
 		cv::fillPoly(img, points, color);
 	else
 		cv::polylines(img, points, true, color, thickness);
+}
+cv::Mat Binarize(cv::Mat img)
+{
+	cv::Mat res;
+	cv::Mat img_blur;
+	cv::medianBlur(img, img_blur, 5);
+		SHOW_N_WAIT(img_blur);
+#ifdef BIN_DIFF
+	cv::Mat img_bg;
+	cv::blur(img_blur, img_bg, img_blur.size()/3);
+		SHOW_N_WAIT(img_bg);
+	img_blur = img_bg - img_blur;
+		SHOW_N_WAIT(img_blur);
+	cv::threshold(img_blur, res, 0, 255, cv::THRESH_OTSU);
+#else
+	cv::Canny(img_blur, res, 50, 150);
+		SHOW_N_WAIT(res);
+	cv::morphologyEx(	res, res, cv::MORPH_CLOSE, 
+						cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5))); // clean
+#endif
+		SHOW_N_WAIT(res);
+	return res;
+}
+cv::Scalar RandomColor(cv::RNG& rng)
+{
+	int color = (unsigned)rng;
+	return cv::Scalar(color & 0xFF, (color >> 8) & 0xFF, (color >> 16) & 0xFF);
 }

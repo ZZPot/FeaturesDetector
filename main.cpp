@@ -1,6 +1,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
-#include "FeatureDetector.h"
+#include "FeatureDetector/FeatureDetector.h"
 
 using namespace cv;
 #define IMG_NAME	"1.jpg"

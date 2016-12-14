@@ -40,8 +40,9 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 	std::vector<Obj2d> res;
 	std::vector<contour_type> contours;
 	std::vector<cv::Vec4i> hierarchy;
-	cv::findContours(img, contours, hierarchy, mode, cv::CHAIN_APPROX_SIMPLE);
-	
+	cv::Mat img_1px;
+	cv::copyMakeBorder(img, img_1px, 1, 1, 1, 1, cv::BORDER_CONSTANT, cv::Scalar(0));
+	cv::findContours(img_1px, contours, hierarchy, mode, cv::CHAIN_APPROX_SIMPLE);
 	if(level_limit < 0)
 		level_limit = INT_MAX;
 	std::set<unsigned> banished;
@@ -54,6 +55,12 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 		Obj2d temp_obj;
 		temp_obj.contours = GetContours(GetContours(hierarchy, i), contours);
 		GetObj2d(&temp_obj);
+		if(!conditions.size() || !conditions.size())
+		{
+			temp_obj.tag = -1;
+			res.push_back(temp_obj);
+		}
+		else
 		for(unsigned j = 0; j < conditions.size(); j++)
 			if(CheckFeatures(&temp_obj, conditions[j], features_to_check[j % features_to_check.size()]))
 			{
@@ -61,13 +68,7 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 				res.push_back(temp_obj);
 				BanishContour(banished, hierarchy, i);
 				break;
-			}
-		if(!conditions.size())
-		{
-			temp_obj.tag = -1;
-			res.push_back(temp_obj);
-			BanishContour(banished, hierarchy, i);
-		}
+			}		
 	}
 	return res;
 }

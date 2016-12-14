@@ -43,4 +43,3 @@ int main()
 		SHOW_N_WAIT(input_img);
 	return 0;
 }
-

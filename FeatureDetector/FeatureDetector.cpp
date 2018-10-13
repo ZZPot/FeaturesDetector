@@ -1,6 +1,7 @@
 #include "FeatureDetector.h"
 #include <opencv2/imgproc.hpp>
-#include "../common/common.hpp"
+#include "OpenCV_common.hpp"
+#include "Draw/DrawDebug.h"
 
 #pragma warning(disable: 4244 4267 4018)
 #define BIN_DIFF
@@ -77,18 +78,7 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 	}
 	return res;
 }
-void DrawContours(	std::vector<std::vector<contour_type>> contours,
-					std::vector<cv::Scalar> colors, cv::Mat& img, 
-					cv::Point offset, int level_limit)
-{
-	if (level_limit < 0)
-		level_limit = contours.size();
-	for(unsigned i = 0; i < level_limit; i++)
-	{
-		unsigned color_num = i % colors.size(); // cyclically switching colors
-		cv::drawContours(img, contours[i], -1, colors[color_num], CV_FILLED, cv::LINE_8, cv::noArray(), INT_MAX, offset);
-	}
-}
+
 int GetContourLevel(std::vector<cv::Vec4i> hierarchy, unsigned contour_num)
 {
 	int res = 0;
@@ -145,20 +135,7 @@ void BanishContour(std::set<unsigned>& banished, std::vector<cv::Vec4i> hierarch
 		for(auto contour: level)
 			banished.insert(contour);
 }
-void DrawRect(cv::Rect rect, cv::Mat& img, cv::Scalar color, int thickness)
-{
-	cv::rectangle(img, rect, color, thickness);
-}
-void DrawRRect(cv::RotatedRect r_rect, cv::Mat& img, cv::Scalar color, int thickness)
-{
-	cv::Point2f points_f[4];
-	r_rect.points(points_f);
-	std::vector<cv::Point> points = {points_f[0], points_f[1], points_f[2], points_f[3]};
-	if(thickness < 0)
-		cv::fillPoly(img, points, color);
-	else
-		cv::polylines(img, points, true, color, thickness);
-}
+
 cv::Mat Binarize(cv::Mat img)
 {
 	cv::Mat res;

@@ -40,4 +40,6 @@ struct type_condition
 	double square_ratio[2]; // min max
 	double size_ratio[2]; // min max
 	double bounding_size_ratio[2]; // min max
+	TAG_TYPE tag;
+	std::string tag_name;
 };

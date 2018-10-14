@@ -66,11 +66,14 @@ std::vector<Obj2d> FindObjects(cv::Mat img, std::vector<type_condition> conditio
 			temp_obj.tag = -1;
 			res.push_back(temp_obj);
 		}
-		else
+		else 
+			//Classification of object
+			//HERE you can use OpenCV functions for machine learing
 		for(unsigned j = 0; j < conditions.size(); j++)
 			if(CheckFeatures(&temp_obj, conditions[j], features_to_check[j % features_to_check.size()]))
 			{
-				temp_obj.tag = j;
+				temp_obj.tag = conditions[j].tag;
+				temp_obj.name = conditions[j].tag_name;
 				res.push_back(temp_obj);
 				BanishContour(banished, hierarchy, i);
 				break;

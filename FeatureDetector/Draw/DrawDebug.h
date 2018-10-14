@@ -9,6 +9,7 @@ enum STROKE_TYPE
 {
 	STROKE_NONE = -1,
 	STROKE_RECT = 0,
+	STROKE_RRECT,
 	STROKE_CIRCLE,
 	STROKE_CONTOUR
 };
@@ -46,15 +47,15 @@ enum PATH_TYPE
 	PATH_ARROWS = 1
 };
 //Defaults definitions
-#define DEFAULT_STROKE_TYPE			STROKE_TYPE::STROKE_RECT
+#define DEFAULT_STROKE_TYPE			STROKE_TYPE::STROKE_NONE
 #define DEFAULT_STROKE_COLOR		cv::Scalar(255, 0, 0)
 #define DEFAULT_STROKE_THICKNESS	1
 #define DEFAULT_FILL_TYPE			FILL_NONE
 #define DEFAULT_FILL_COLOR			cv::Scalar(255, 255, 255)
-#define DEFAULT_CAPTION_TYPE		CAPTION_TYPE::CAPTION_TOP
+#define DEFAULT_CAPTION_TYPE		CAPTION_TYPE::CAPTION_NONE
 #define DEFAULT_CAPTION_COLOR		cv::Scalar(255, 255, 255)
-#define DEFAULT_CAPTION_SIZE		8
-#define DEFAULT_MARKER_TYPE			MARKER_TYPE::MARKER_CROSS
+#define DEFAULT_CAPTION_SIZE		2
+#define DEFAULT_MARKER_TYPE			MARKER_TYPE::MARKER_NONE
 #define DEFAULT_MARKER_COLOR		cv::Scalar(255, 0, 0)
 #define DEFAULT_MARKER_SIZE			10
 #define DEFAULT_MARKER_THICKNESS	3
@@ -63,9 +64,9 @@ enum PATH_TYPE
 #define DEFAULT_PATH_THICKNESS		1
 #define DEFAULT_LINE_TYPE			cv::LineTypes::LINE_4
 #define DEFAULT_FONT				cv::FONT_HERSHEY_PLAIN
-#define HERSHEY_FONT_SIZE			15
+#define HERSHEY_FONT_SIZE			9
 
-struct draw_conf
+struct draw_conf // I should change name of this struct, really
 {
 	draw_conf(STROKE_TYPE stroke = DEFAULT_STROKE_TYPE,
 		cv::Scalar stroke_clr = DEFAULT_STROKE_COLOR,
@@ -106,7 +107,7 @@ public:
 	virtual ~DrawConfig();
 	int SetTag(TAG_TYPE tag, draw_conf* obj);
 	int ResetTag(TAG_TYPE tag);
-	draw_conf* GetDrawByTag(TAG_TYPE tag);
+	draw_conf* GetConfByTag(TAG_TYPE tag);
 protected:
 	std::map<TAG_TYPE, draw_conf*> _config;
 };
@@ -114,9 +115,8 @@ void DrawRect(cv::Rect rect, cv::Mat& img, cv::Scalar color = cv::Scalar(255, 25
 void DrawRRect(cv::RotatedRect r_rect, cv::Mat& img, cv::Scalar color = cv::Scalar(255, 255, 255), int thickness = 1);
 void DrawContours(std::vector<std::vector<contour_type>> contours,
 	std::vector<cv::Scalar> colors, cv::Mat& img,
-	cv::Point offset = cv::Point(), int level_limit = -1, cv::LineTypes line_type = cv::LineTypes::FILLED);
+	cv::Point offset = cv::Point(), int level_limit = -1, int thickness = 1);
 int DrawObjects(cv::Mat& img, std::vector<Obj2d> objects, DrawConfig& config);
 int DrawObj(cv::Mat& img, Obj2d& object, draw_conf* config);
-cv::Point2d CalcStrSize(std::string str, cv::HersheyFonts font, int size);
-
+cv::Size CalcStrSize(std::string str, cv::HersheyFonts font, int size);
 extern cv::LineTypes global_line_type;

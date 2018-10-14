@@ -39,19 +39,29 @@ DrawConfig::~DrawConfig()
 int DrawConfig::SetTag(TAG_TYPE tag, draw_conf* conf)
 {
 	int res = 0;
-	
+	_config[tag] = conf;
+	res = 1;
 	return res;
 }
 int DrawConfig::ResetTag(TAG_TYPE tag)
 {
 	int res = 0;
-	
+	auto found = _config.find(tag);
+	if (found != _config.end())
+	{
+		_config.erase(found);
+		res = 1;
+	}
 	return res;
 }
-draw_conf* DrawConfig::GetDrawByTag(TAG_TYPE tag)
+draw_conf* DrawConfig::GetConfByTag(TAG_TYPE tag)
 {
 	draw_conf* res = nullptr;
-
+	auto found = _config.find(tag);
+	if (found != _config.end())
+	{
+		res = found->second;
+	}
 	return res;
 }
 int DrawObjects(cv::Mat& img, std::vector<Obj2d> objects, DrawConfig& config)
@@ -60,7 +70,7 @@ int DrawObjects(cv::Mat& img, std::vector<Obj2d> objects, DrawConfig& config)
 	draw_conf def_conf;
 	for (Obj2d& object : objects)
 	{
-		draw_conf* cur_conf = config.GetDrawByTag(object.tag);
+		draw_conf* cur_conf = config.GetConfByTag(object.tag);
 		if (cur_conf == nullptr)
 			cur_conf = &def_conf;
 		res += DrawObj(img, object, cur_conf);
@@ -77,11 +87,14 @@ int DrawObj(cv::Mat& img, Obj2d& object, draw_conf* config)
 		case STROKE_TYPE::STROKE_RECT:
 			DrawRect(object.rect, img, config->stroke_color, config->stroke_thickness);
 			break;
+		case STROKE_TYPE::STROKE_RRECT:
+			DrawRRect(object.r_rect, img, config->stroke_color, config->stroke_thickness);
+			break;
 		case STROKE_TYPE::STROKE_CIRCLE:
 			cv::ellipse(img, object.r_rect, config->stroke_color, config->stroke_thickness, global_line_type);
 			break;
 		case STROKE_TYPE::STROKE_CONTOUR:
-			DrawContours(object.contours, {config->stroke_color}, img, cv::Point(), 1, global_line_type);
+			DrawContours(object.contours, {config->stroke_color}, img, cv::Point(), 1, config->stroke_thickness);
 			break;
 		}
 	}
@@ -96,37 +109,34 @@ int DrawObj(cv::Mat& img, Obj2d& object, draw_conf* config)
 	}
 	if ((config->caption_type != CAPTION_TYPE::CAPTION_NONE) && (object.name.length()))
 	{
-		cv::Point2d caption_pos;
 		int text_len = object.name.length();
-		cv::Point2d text_size = CalcStrSize(object.name, DEFAULT_FONT, config->caption_size);
-		switch (config->caption_type)
+		cv::Size text_size = CalcStrSize(object.name, DEFAULT_FONT, config->caption_size);
+		std::map<CAPTION_TYPE, cv::Point2d> positions;
+		positions[CAPTION_TYPE::CAPTION_TOP] = cv::Point2d(object.rect.x + (object.rect.width - text_size.width) / 2, object.rect.y);
+		positions[CAPTION_TYPE::CAPTION_TOP_LEFT] = cv::Point2d(object.rect.x - text_size.width, object.rect.y);
+		positions[CAPTION_TYPE::CAPTION_TOP_RIGHT] = cv::Point2d(object.rect.x + object.rect.width, object.rect.y);
+		positions[CAPTION_TYPE::CAPTION_BOTTOM] = cv::Point2d(object.rect.x + (object.rect.width - text_size.width) / 2, object.rect.y + object.rect.height + text_size.height);
+		positions[CAPTION_TYPE::CAPTION_BOTTOM_LEFT] = cv::Point2d(object.rect.x - text_size.width, object.rect.y + object.rect.height + text_size.height);
+		positions[CAPTION_TYPE::CAPTION_BOTTOM_RIGHT] = cv::Point2d(object.rect.x + object.rect.width, object.rect.y + object.rect.height + text_size.height);
+		CAPTION_TYPE cur_type = config->caption_type;
+		cv::Rect img_rect(cv::Point2i(0, 0), cv::Size(img.rows, img.cols));
+		if (config->caption_type == CAPTION_TYPE::CAPTION_AUTO)
 		{
-		case CAPTION_TYPE::CAPTION_TOP:
-			caption_pos.y = object.rect.y;
-			caption_pos.x = object.rect.x - (object.rect.width - text_size.x) / 2;
-			break;
-		case CAPTION_TYPE::CAPTION_TOP_LEFT:
-			caption_pos.y = object.rect.y;
-			caption_pos.x = object.rect.x - text_size.x;
-			break;
-		case CAPTION_TYPE::CAPTION_TOP_RIGHT:
-			caption_pos.y = object.rect.y;
-			caption_pos.x = object.rect.x - object.rect.width;
-			break;
-		case CAPTION_TYPE::CAPTION_BOTTOM:
-			caption_pos.y = object.rect.y - object.rect.height - text_size.y;
-			caption_pos.x = object.rect.x - (object.rect.width - text_size.x) / 2;
-			break;
-		case CAPTION_TYPE::CAPTION_BOTTOM_LEFT:
-			caption_pos.y = object.rect.y - object.rect.height - text_size.y;
-			caption_pos.x = object.rect.x - text_size.x;
-			break;
-		case CAPTION_TYPE::CAPTION_BOTTOM_RIGHT:
-			caption_pos.y = object.rect.y - object.rect.height - text_size.y;
-			caption_pos.x = object.rect.x - object.rect.width;
-			break;
+			cur_type = CAPTION_TYPE::CAPTION_TOP; // default value for auto
+			int max_square = 0;
+			for (auto& position : positions)
+			{
+				cv::Rect text_rect(position.second, text_size);
+				auto intersected_rect = img_rect & text_rect;
+				int square = intersected_rect.width*intersected_rect.height;
+				if (square > max_square)
+				{
+					max_square = square;
+					cur_type = position.first;
+				}
+			}
 		}
-		putText(img, object.name.c_str(), caption_pos, DEFAULT_FONT, config->caption_size, config->caption_color, 1, global_line_type);
+		putText(img, object.name.c_str(), positions[cur_type], DEFAULT_FONT, config->caption_size, config->caption_color, 1, global_line_type);
 	}
 	return res;
 }
@@ -146,20 +156,21 @@ void DrawRRect(cv::RotatedRect r_rect, cv::Mat& img, cv::Scalar color, int thick
 }
 void DrawContours(std::vector<std::vector<contour_type>> contours,
 	std::vector<cv::Scalar> colors, cv::Mat& img,
-	cv::Point offset, int level_limit, cv::LineTypes line_type)
+	cv::Point offset, int level_limit, int thickness)
 {
 	if (level_limit < 0)
 		level_limit = contours.size();
 	for (unsigned i = 0; i < level_limit; i++)
 	{
 		unsigned color_num = i % colors.size(); // cyclically switching colors
-		cv::drawContours(img, contours[i], -1, colors[color_num], line_type, cv::LINE_8, cv::noArray(), INT_MAX, offset);
+		cv::drawContours(img, contours[i], -1, colors[color_num], thickness, global_line_type, cv::noArray(), INT_MAX, offset);
 	}
 }
-cv::Point2d CalcStrSize(std::string str, cv::HersheyFonts font, int size)
+cv::Size CalcStrSize(std::string str, cv::HersheyFonts font, int size)
 {
-	cv::Point2d res = cv::Point2d();
-	//?????????
+	cv::Size res = cv::Size();
+	res.height = size * HERSHEY_FONT_SIZE;
+	res.width = str.length()*HERSHEY_FONT_SIZE*size;
 	return res;
 }
 cv::LineTypes global_line_type = DEFAULT_LINE_TYPE;

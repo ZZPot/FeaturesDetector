@@ -4,7 +4,8 @@
 #include "Draw/DrawDebug.h"
 
 #pragma warning(disable: 4244 4267 4018)
-#define BIN_DIFF
+// bad results
+//#define BIN_DIFF
 bool CheckFeatures(Obj2d* obj, type_condition condition, int features_to_check)
 {
 	bool res = true;

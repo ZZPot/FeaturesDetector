@@ -46,7 +46,8 @@ enum PATH_TYPE
 	PATH_LINES = 0,
 	PATH_ARROWS = 1
 };
-//Defaults definitions
+
+#pragma region Defaults definitions
 #define DEFAULT_STROKE_TYPE			STROKE_TYPE::STROKE_NONE
 #define DEFAULT_STROKE_COLOR		cv::Scalar(255, 0, 0)
 #define DEFAULT_STROKE_THICKNESS	1
@@ -65,7 +66,7 @@ enum PATH_TYPE
 #define DEFAULT_LINE_TYPE			cv::LineTypes::LINE_4
 #define DEFAULT_FONT				cv::FONT_HERSHEY_PLAIN
 #define HERSHEY_FONT_SIZE			9
-
+#pragma endregion
 struct draw_conf // I should change name of this struct, really
 {
 	draw_conf(STROKE_TYPE stroke = DEFAULT_STROKE_TYPE,

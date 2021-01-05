@@ -11,7 +11,7 @@ using namespace cv;
 
 int main()
 {
-	Mat input_img = imread(IMG_NAME, IMREAD_GRAYSCALE);
+	Mat input_img = imread(IMG_NAME, cv::IMREAD_GRAYSCALE);
 		SHOW_N_WAIT(input_img);
 	Mat img_bin = Binarize(input_img);
 
@@ -39,7 +39,7 @@ int main()
 	std::vector<int> check = {FEATURE_CHECK_SIZE | FEATURE_CHECK_SIZE_RATIO};
 	Mat img_obj = Mat::zeros(img_bin.size(), CV_8UC3);
 	std::vector<Obj2d> objects = FindObjects(img_bin, cond, check, RETR_EXTERNAL, 0);
-	cvtColor(input_img, input_img, CV_GRAY2BGR);
+	cvtColor(input_img, input_img, COLOR_GRAY2BGR);
 #pragma region COLORING
 	DrawConfig draw_config;
 	draw_conf pick_conf;
@@ -56,6 +56,7 @@ int main()
 	draw_config.SetTag(TAG_SCREW, &screw_conf);
 #pragma endregion
 //tests
+	//global_line_type = cv::LineTypes::LINE_AA;
 	cv::Mat temp_img;
 	temp_img = input_img.clone();
 	DrawObjects(temp_img, objects, draw_config);

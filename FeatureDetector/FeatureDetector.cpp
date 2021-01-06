@@ -174,8 +174,9 @@ Obj2d RotateObj(Obj2d& obj, double angle)
 	cv::Point offset(0,0);
 	offset -= obj.r_rect.center - diag; 
 	cv::Mat obj_field(field_size, CV_8UC1, cv::Scalar(0));
-	DrawContours(obj.contours, {cv::Scalar(255)}, obj_field, offset);
-	cv::Point2f rot_center = obj.r_rect.center - obj.rect.tl() + diag;
+	DrawContours(obj.contours, {cv::Scalar(255)}, obj_field, offset, 1, cv::FILLED);
+	cv::Point2f rot_center = obj.r_rect.center - obj.rect.tl() + diag/2;
+	cv::circle(obj_field, rot_center, 1, cv::Scalar(255, 0, 0));
 	cv::Mat rot_mat = cv::getRotationMatrix2D(rot_center, angle, 1);
 	cv::warpAffine(obj_field, obj_field, rot_mat, field_size);
 	std::vector<Obj2d> res = FindObjects(obj_field, std::vector<type_condition>(),  std::vector<int>(), cv::RETR_EXTERNAL);
@@ -200,7 +201,7 @@ double HSymmetry(cv::Mat img)
 {
 	if(img.cols < 2)
 		return 0;
-	int cols = img.rows/2;
+	int cols = img.cols/2;
 	cv::Mat left_half = img.colRange(0, cols).clone();
 	cv::Mat right_half = img.colRange(img.cols - cols, img.cols).clone();
 	cv::flip(right_half, right_half, 1);
